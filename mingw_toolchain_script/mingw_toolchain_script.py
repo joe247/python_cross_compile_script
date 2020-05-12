@@ -265,10 +265,7 @@ class Event:
 		self.handlers = set()
 
 	def any(self):
-		if len(self.handlers) > 0:
-			return True
-		else:
-			return False
+		return len(self.handlers) > 0
 
 	def handle(self, handler):
 		self.handlers.add(handler)
@@ -536,7 +533,7 @@ class MinGW64ToolChainBuilder:
 	#:
 
 	def gitClone(self, packageName, url, virtFolderName=None, renameTo=None, desiredBranch=None, recursive=False, shallow=False):
-		if virtFolderName == None:
+		if virtFolderName is None:
 			virtFolderName = self.sanitize_filename(os.path.basename(url))
 			if not virtFolderName.endswith(".git"):
 				virtFolderName += ".git"
@@ -596,7 +593,8 @@ class MinGW64ToolChainBuilder:
 			)
 			if desiredBranch != None:
 				self.cchdir(realFolderName + ".tmp")
-				self.run_process('git checkout{0}'.format(" master" if desiredBranch == None else branchString))
+				self.run_process('git checkout{0}'.format(
+				    " master" if desiredBranch is None else branchString))
 				self.cchdir("..")
 			self.run_process('mv "{0}" "{1}"'.format(realFolderName + ".tmp", realFolderName))
 
@@ -658,16 +656,15 @@ class MinGW64ToolChainBuilder:
 					branch = None
 					if "checkout" in p:
 						branch = p["checkout"]
-					if "git_shallow" in p:
-						if p["git_shallow"] == True:
-							shallowClone = True
+					if "git_shallow" in p and p["git_shallow"] == True:
+						shallowClone = True
 					productPath = self.gitClone(pn, pUrl, desiredBranch=branch, shallow=shallowClone)
 
 				elif p["type"] == "archive":
 					pUrl = p["url"].format(version=p["version"])
 					fileName = os.path.basename(pUrl)
 					folderName = self.splitext(fileName)[0]
-					if not os.path.isfile(fileName) and not os.path.isdir(folderName):
+					if not (os.path.isfile(fileName) or os.path.isdir(folderName)):
 						self.log("Downloading sources for: %s" % pn)
 						self.download_file(pUrl)
 						self.log("Extracting sources for: %s" % pn)
